@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/lxn/walk"
-	. "github.com/lxn/walk/declarative"
 	"os"
 	"os/exec"
 	"strconv"
@@ -12,7 +11,7 @@ import (
 )
 
 var home string
-var sessionDurationMinutes = int64(60)
+var sessionDurationMinutes = int64(75)
 var maxSessionDuration = sessionDurationMinutes * 60 // seconds
 var username string
 var warningInterval = int64(300) // 5 minutes (in seconds)
@@ -23,7 +22,6 @@ func init() {
 }
 
 func main() {
-	testWalk()
 	notifyUser("Welcome, "+strings.Title(username)+"! You have "+strconv.FormatInt(sessionDurationMinutes, 10)+" minutes before your time is up.", "30")
 	for duration := int64(0); duration < maxSessionDuration; duration++ {
 		time.Sleep(1 * time.Second)
@@ -45,12 +43,14 @@ func kickUser() {
 }
 
 func notifyUser(msg string, timeout string) {
-	cmd := exec.Command("msg", username, "/TIME:"+timeout, msg)
-	err := cmd.Start()
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-	cmd.Wait()
+	walk.MsgBox(nil, "Tardis Update", msg, walk.MsgBoxIconWarning)
+	/*
+		cmd := exec.Command("msg", username, "/TIME:"+timeout, msg)
+		err := cmd.Start()
+		if err != nil {
+			fmt.Printf("error: %v\n", err)
+		}
+		cmd.Wait()*/
 }
 
 func shutDown() {
@@ -61,28 +61,4 @@ func shutDown() {
 	}
 
 	cmd.Wait()
-}
-
-func testWalk() {
-	var inTE, outTE *walk.TextEdit
-
-	MainWindow{
-		Title:   "SCREAMO",
-		MinSize: Size{600, 400},
-		Layout:  VBox{},
-		Children: []Widget{
-			HSplitter{
-				Children: []Widget{
-					TextEdit{AssignTo: &inTE},
-					TextEdit{AssignTo: &outTE, ReadOnly: true},
-				},
-			},
-			PushButton{
-				Text: "SCREAM",
-				OnClicked: func() {
-					outTE.SetText(strings.ToUpper(inTE.Text()))
-				},
-			},
-		},
-	}.Run()
 }
