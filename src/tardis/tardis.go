@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/lxn/walk"
+	. "github.com/lxn/walk/declarative"
 	"os"
 	"os/exec"
 	"strconv"
@@ -21,6 +23,7 @@ func init() {
 }
 
 func main() {
+	testWalk()
 	notifyUser("Welcome, "+strings.Title(username)+"! You have "+strconv.FormatInt(sessionDurationMinutes, 10)+" minutes before your time is up.", "30")
 	for duration := int64(0); duration < maxSessionDuration; duration++ {
 		time.Sleep(1 * time.Second)
@@ -58,4 +61,28 @@ func shutDown() {
 	}
 
 	cmd.Wait()
+}
+
+func testWalk() {
+	var inTE, outTE *walk.TextEdit
+
+	MainWindow{
+		Title:   "SCREAMO",
+		MinSize: Size{600, 400},
+		Layout:  VBox{},
+		Children: []Widget{
+			HSplitter{
+				Children: []Widget{
+					TextEdit{AssignTo: &inTE},
+					TextEdit{AssignTo: &outTE, ReadOnly: true},
+				},
+			},
+			PushButton{
+				Text: "SCREAM",
+				OnClicked: func() {
+					outTE.SetText(strings.ToUpper(inTE.Text()))
+				},
+			},
+		},
+	}.Run()
 }
