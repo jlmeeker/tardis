@@ -30,7 +30,7 @@ func ShowPopUpWindow(msg string) {
 }
 
 func useZenity(msg string) (err error) {
-	cmd := exec.Command("zenity", "--warning", "--text", msg)
+	cmd := exec.Command("zenity", "--warning", "--title", "Tardis Update", "--text", msg)
 	err = cmd.Start()
 	if err == nil {
 		cmd.Wait()

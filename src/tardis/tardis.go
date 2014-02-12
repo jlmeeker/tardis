@@ -1,7 +1,8 @@
 package main
 
 import (
-	"strconv"
+	"flag"
+	"fmt"
 	"strings"
 	"tardis/logout"
 	"tardis/popup"
@@ -9,11 +10,11 @@ import (
 	"time"
 )
 
+var sessionDurationMinutes = flag.Int("t", 75, "maximum session time in minutes")
 var home string
-var sessionDurationMinutes = int64(75)
-var maxSessionDuration = sessionDurationMinutes * 60 // seconds
+var maxSessionDuration int
 var username string
-var warningInterval = int64(300) // 5 minutes (in seconds)
+var warningInterval = 300 // 5 minutes (in seconds)
 
 func init() {
 	home = userinfo.GetUserHome()
@@ -21,15 +22,19 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+
+	maxSessionDuration = *sessionDurationMinutes * 60 // seconds
 	time.Sleep(5 * time.Second)
-	go notifyUser("Welcome, " + strings.Title(username) + "! You have " + strconv.FormatInt(sessionDurationMinutes, 10) + " minutes before your time is up.")
-	for duration := int64(0); duration < maxSessionDuration; duration++ {
+	msg := fmt.Sprintf("Welcome %s! You have %v minutes before your time is up.", strings.Title(username), *sessionDurationMinutes)
+	go notifyUser(msg)
+	for duration := 0; duration < maxSessionDuration; duration++ {
 		time.Sleep(1 * time.Second)
 
 		remainder := (maxSessionDuration - duration) % warningInterval
 		if remainder == 0 {
-			timeleft := int64((maxSessionDuration - duration) / 60) // minutes
-			msg := strconv.FormatInt(timeleft, 10) + " minutes left"
+			timeleft := (maxSessionDuration - duration) / 60 // minutes
+			msg = fmt.Sprintf("%v minutes left", timeleft)
 			go notifyUser(msg)
 		}
 	}
