@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"github.com/lxn/walk"
-	"os"
-	"os/exec"
 	"strconv"
 	"strings"
+	"tardis/logout"
+	"tardis/popup"
+	"tardis/userinfo"
 	"time"
 )
 
@@ -17,12 +16,13 @@ var username string
 var warningInterval = int64(300) // 5 minutes (in seconds)
 
 func init() {
-	username = os.Getenv("USERNAME")
-	home = os.Getenv("HOMEPATH")
+	home = userinfo.GetUserHome()
+	username = userinfo.GetUserLogin()
 }
 
 func main() {
-	notifyUser("Welcome, "+strings.Title(username)+"! You have "+strconv.FormatInt(sessionDurationMinutes, 10)+" minutes before your time is up.", "30")
+	time.Sleep(5 * time.Second)
+	go notifyUser("Welcome, " + strings.Title(username) + "! You have " + strconv.FormatInt(sessionDurationMinutes, 10) + " minutes before your time is up.")
 	for duration := int64(0); duration < maxSessionDuration; duration++ {
 		time.Sleep(1 * time.Second)
 
@@ -30,35 +30,18 @@ func main() {
 		if remainder == 0 {
 			timeleft := int64((maxSessionDuration - duration) / 60) // minutes
 			msg := strconv.FormatInt(timeleft, 10) + " minutes left"
-			go notifyUser(msg, "10")
+			go notifyUser(msg)
 		}
 	}
 	kickUser()
 }
 
 func kickUser() {
-	notifyUser("Logging you off in 30 seconds!!!", "20")
+	go notifyUser("Logging you off in 30 seconds!!!")
 	time.Sleep(30 * time.Second)
-	shutDown()
+	logout.LogoutUser(username)
 }
 
-func notifyUser(msg string, timeout string) {
-	walk.MsgBox(nil, "Tardis Update", msg, walk.MsgBoxIconWarning)
-	/*
-		cmd := exec.Command("msg", username, "/TIME:"+timeout, msg)
-		err := cmd.Start()
-		if err != nil {
-			fmt.Printf("error: %v\n", err)
-		}
-		cmd.Wait()*/
-}
-
-func shutDown() {
-	cmd := exec.Command("shutdown", "/l")
-	err := cmd.Start()
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-
-	cmd.Wait()
+func notifyUser(msg string) {
+	popup.ShowPopUpWindow(msg)
 }
