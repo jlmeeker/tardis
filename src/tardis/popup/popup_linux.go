@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-var progs = []string{"idontwork", "zenity"}
+var progs = []string{"zenity"}
 
 func ShowPopUpWindow(msg string) {
 	var err error
